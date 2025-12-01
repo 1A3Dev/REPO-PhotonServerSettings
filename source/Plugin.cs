@@ -19,10 +19,11 @@ namespace PhotonServerSettings
         internal static ManualLogSource StaticLogger { get; private set; }
         internal static ConfigFile StaticConfig { get; private set; }
 
-        internal static ConfigEntry<string> SteamAppId;
+        internal static ConfigEntry<int> SteamAppId;
         internal static ConfigEntry<string> PhotonAppIdRealtime;
         internal static ConfigEntry<string> PhotonAppIdVoice;
-        internal static ConfigEntry<string> PhotonServer;
+        internal static ConfigEntry<string> PhotonServerAddress;
+        internal static ConfigEntry<int> PhotonServerPort;
 
         private void Awake()
         {
@@ -32,10 +33,11 @@ namespace PhotonServerSettings
             StaticLogger = Logger;
             StaticConfig = Config;
             
-            SteamAppId = Config.Bind("Steam", "AppId", "", new ConfigDescription("Steam App ID"));
+            SteamAppId = Config.Bind("Steam", "AppId", 0, new ConfigDescription("Steam App ID"));
             PhotonAppIdRealtime = Config.Bind("Photon", "AppId Realtime", "", new ConfigDescription("Photon Realtime App ID"));
             PhotonAppIdVoice = Config.Bind("Photon", "AppId Voice", "", new ConfigDescription("Photon Voice App ID"));
-            PhotonServer = Config.Bind("Photon", "Server", "", new ConfigDescription("Photon Server Address"));
+            PhotonServerAddress = Config.Bind("Photon", "Server", "", new ConfigDescription("Photon Server Address"));
+            PhotonServerPort = Config.Bind("Photon", "Server Port", 0, new ConfigDescription("Photon Server Port"));
 
             harmony.PatchAll(typeof(GeneralPatches));
             
@@ -58,9 +60,13 @@ namespace PhotonServerSettings
         [HarmonyPostfix]
         [HarmonyWrapSafe]
         public static void DataDirector_PhotonSetAppId_Postfix(){
-            if(!string.IsNullOrEmpty(PluginLoader.PhotonServer.Value)){
-                PhotonNetwork.PhotonServerSettings.AppSettings.Server = PluginLoader.PhotonServer.Value;
-                PluginLoader.StaticLogger.LogInfo("Photon: Changed Server");
+            if(!string.IsNullOrEmpty(PluginLoader.PhotonServerAddress.Value)){
+                PhotonNetwork.PhotonServerSettings.AppSettings.Server = PluginLoader.PhotonServerAddress.Value;
+                PluginLoader.StaticLogger.LogInfo("Photon: Changed Server Address");
+            }
+            if(PluginLoader.PhotonServerPort.Value > 0){
+                PhotonNetwork.PhotonServerSettings.AppSettings.Port = PluginLoader.PhotonServerPort.Value;
+                PluginLoader.StaticLogger.LogInfo("Photon: Changed Server Port");
             }
             
             if(!string.IsNullOrEmpty(PluginLoader.PhotonAppIdRealtime.Value)){
@@ -78,10 +84,10 @@ namespace PhotonServerSettings
         [HarmonyPrefix]
         [HarmonyWrapSafe]
         public static void SteamManager_Awake_Prefix(){
-            if(!SteamManager.instance && uint.TryParse(PluginLoader.SteamAppId.Value, out uint steamAppId)){
+            if(!SteamManager.instance && PluginLoader.SteamAppId.Value > 0 && PluginLoader.SteamAppId.Value != 3241660){
                 try {
-                    SteamClient.Init(steamAppId);
-                    PluginLoader.StaticLogger.LogInfo($"Steam: Changed AppId to {steamAppId}");
+                    SteamClient.Init((uint)PluginLoader.SteamAppId.Value);
+                    PluginLoader.StaticLogger.LogInfo($"Steam: Changed AppId to {PluginLoader.SteamAppId.Value}");
                 }catch(Exception ex){
                     PluginLoader.StaticLogger.LogError("Steamworks failed to initialize. Error: " + ex.Message);
                 }
