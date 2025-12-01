@@ -11,7 +11,7 @@
     <PropertyGroup>
         <IsThunderstorePackable>true</IsThunderstorePackable>
         <ThunderstoreName>PhotonServerSettings_REPO</ThunderstoreName>
-        <ThunderstoreDescription>Various improvements for lobbies</ThunderstoreDescription>
+        <ThunderstoreDescription>Override photon settings</ThunderstoreDescription>
         <ThunderstoreIconPath>$(ProjectDir)assets/icons/icon.png</ThunderstoreIconPath>
         <HasBepInPlugin>true</HasBepInPlugin>
     </PropertyGroup>
