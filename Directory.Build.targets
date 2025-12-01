@@ -1,0 +1,17 @@
+<Project>
+    <Import Project="Sdk.targets" Sdk="Sigurd.Thunderstore.Sdk" />
+
+    <!-- prevent referenced assemblies from being copied to output folders -->
+    <Target Name="ClearReferenceCopyLocalPaths" AfterTargets="ResolveAssemblyReferences" Condition="$(ClearCopyLocalPaths)">
+        <ItemGroup>
+            <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"/>
+        </ItemGroup>
+    </Target>
+
+    <Target Name="SetThunderstorePackageVersion" DependsOnTargets="MinVer">
+        <PropertyGroup>
+            <ThunderstorePackageVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch)</ThunderstorePackageVersion>
+        </PropertyGroup>
+    </Target>
+
+</Project>

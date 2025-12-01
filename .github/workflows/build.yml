@@ -1,0 +1,34 @@
+name: Build
+
+on:
+  # Trigger the workflow on pushes to only the 'master' branch (this avoids duplicate checks being run e.g., for dependabot pull requests)
+  push:
+    branches: [ master ]
+  # Trigger the workflow on any pull request
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Sources
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+          submodules: recursive
+
+      - name: Setup .NET environment
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.x"
+
+      - name: Restore project
+        run: |
+          dotnet restore
+          dotnet tool restore
+
+      - name: Build solution
+        run: |
+          dotnet build -c Release

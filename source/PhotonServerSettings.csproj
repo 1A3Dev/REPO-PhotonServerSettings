@@ -1,0 +1,81 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <AssemblyName>uk.1a3.photonserversettings</AssemblyName>
+        <Product>PhotonServerSettings</Product>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <IsThunderstorePackable>true</IsThunderstorePackable>
+        <ThunderstoreName>PhotonServerSettings_REPO</ThunderstoreName>
+        <ThunderstoreDescription>Various improvements for lobbies</ThunderstoreDescription>
+        <ThunderstoreIconPath>$(ProjectDir)assets/icons/icon.png</ThunderstoreIconPath>
+        <HasBepInPlugin>true</HasBepInPlugin>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ThunderstoreBuildCopyPath Include="$(TargetPath)" Destination="BepInEx/plugins/$(ProjectName)/" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="BepInEx.Core" Version="5.*" />
+        <PackageReference Include="UnityEngine.Modules" Version="2022.3.62" IncludeAssets="compile" />
+        <Reference Include="MenuLib">
+            <HintPath>..\deps\MenuLib.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup Condition="$(CI) != 'true'">
+        <Reference Include="Assembly-CSharp" Publicize="true">
+            <HintPath>$(GameDir)REPO_Data/Managed/Assembly-CSharp.dll</HintPath>
+        </Reference>
+        <Reference Include="Facepunch.Steamworks.Win64">
+            <HintPath>$(GameDir)REPO_Data/Managed/Facepunch.Steamworks.Win64.dll</HintPath>
+        </Reference>
+		<Reference Include="Photon3Unity3D">
+			<HintPath>$(GameDir)REPO_Data\Managed\Photon3Unity3D.dll</HintPath>
+		</Reference>
+		<Reference Include="PhotonRealtime">
+			<HintPath>$(GameDir)REPO_Data\Managed\PhotonRealtime.dll</HintPath>
+		</Reference>
+		<Reference Include="PhotonUnityNetworking">
+			<HintPath>$(GameDir)REPO_Data\Managed\PhotonUnityNetworking.dll</HintPath>
+		</Reference>
+		<Reference Include="PhotonVoice.PUN">
+			<HintPath>$(GameDir)REPO_Data\Managed\PhotonVoice.PUN.dll</HintPath>
+		</Reference>
+    </ItemGroup>
+
+    <ItemGroup Condition="$(CI) == 'true'">
+        <PackageReference Include="R.E.P.O.GameLibs.Steam" Version="*-*" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <DebugType>embedded</DebugType>
+        <DefineConstants>DEBUG</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
+    </PropertyGroup>
+
+    <Target Name="CopyDlls" AfterTargets="Build" Condition="'$(Configuration)|$(ShouldCopyToTestScripts)' == 'Debug|true'">
+        <ItemGroup>
+            <DllsToCopy Include="$(OutputPath)\*.dll" />
+        </ItemGroup>
+        <Copy SourceFiles="@(DllsToCopy)" DestinationFolder="$(TestScriptsDir)\BepInEx\scripts">
+            <Output TaskParameter="CopiedFiles" ItemName="CopiedOutputFiles" />
+        </Copy>
+    </Target>
+</Project>
