@@ -9,7 +9,6 @@
 
 This mod allows you to override a few values to allow using a custom photon server:
 
-- Steam App ID
 - Photon Realtime App ID
 - Photon Voice App ID
 - Photon Server Address
