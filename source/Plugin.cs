@@ -19,8 +19,7 @@ namespace PhotonServerSettings
 
         internal static ManualLogSource StaticLogger { get; private set; }
         internal static ConfigFile StaticConfig { get; private set; }
-
-        internal static ConfigEntry<int> SteamAppId;
+        
         internal static ConfigEntry<string> PhotonAppIdRealtime;
         internal static ConfigEntry<string> PhotonAppIdVoice;
         internal static ConfigEntry<string> PhotonServerAddress;
@@ -36,7 +35,6 @@ namespace PhotonServerSettings
             StaticLogger = Logger;
             StaticConfig = Config;
             
-            SteamAppId = Config.Bind("Steam", "AppId", 0, new ConfigDescription("Steam App ID"));
             PhotonAppIdRealtime = Config.Bind("Photon", "AppId Realtime", "", new ConfigDescription("Photon Realtime App ID"));
             PhotonAppIdVoice = Config.Bind("Photon", "AppId Voice", "", new ConfigDescription("Photon Voice App ID"));
             PhotonServerAddress = Config.Bind("Photon", "Server", "", new ConfigDescription("Photon Server Address"));
@@ -111,26 +109,12 @@ namespace PhotonServerSettings
                 PluginLoader.StaticLogger.LogInfo("Photon: Cleared Region");
             }
         }
-        
-        [HarmonyPatch(typeof(SteamManager), nameof(SteamManager.Awake))]
-        [HarmonyPrefix]
-        [HarmonyWrapSafe]
-        public static void SteamManager_Awake_Prefix(){
-            if(!SteamManager.instance && PluginLoader.SteamAppId.Value > 0 && PluginLoader.SteamAppId.Value != 3241660){
-                try {
-                    SteamClient.Init((uint)PluginLoader.SteamAppId.Value);
-                    PluginLoader.StaticLogger.LogInfo($"Steam: Changed AppId to {PluginLoader.SteamAppId.Value}");
-                }catch(Exception ex){
-                    PluginLoader.StaticLogger.LogError("Steamworks failed to initialize. Error: " + ex.Message);
-                }
-            }
-        }
 
         [HarmonyPatch(typeof(SteamManager), nameof(SteamManager.SendSteamAuthTicket))]
         [HarmonyPostfix]
         [HarmonyWrapSafe]
         public static void SteamManager_SendSteamAuthTicket_Postfix(){
-            if(!string.IsNullOrEmpty(PluginLoader.PhotonAppIdRealtime.Value) || !string.IsNullOrEmpty(PluginLoader.PhotonAppIdVoice.Value)){
+            if(!string.IsNullOrEmpty(PluginLoader.PhotonServerAddress.Value) || !string.IsNullOrEmpty(PluginLoader.PhotonAppIdRealtime.Value) || !string.IsNullOrEmpty(PluginLoader.PhotonAppIdVoice.Value)){
                 PhotonNetwork.AuthValues.AuthType = CustomAuthenticationType.None;
                 PluginLoader.StaticLogger.LogInfo("Photon: Cleared Auth Type");
             }
