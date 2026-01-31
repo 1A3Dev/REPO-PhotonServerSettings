@@ -1,3 +1,9 @@
+# 1.0.4
+
+### NEW
+
+- Added config options to change photon `ObjectsInOneUpdate` & `SendRate`.
+
 # 1.0.3
 
 ### CHANGES

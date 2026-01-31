@@ -30,6 +30,9 @@ namespace PhotonServerSettings
         internal static ConfigEntry<string> PhotonConnectionProtocol;
         internal static ConfigEntry<bool> PhotonAlternativeUdpPorts;
 
+        internal static ConfigEntry<int> PhotonObjectsInOneUpdate; 
+        internal static ConfigEntry<int> PhotonSendRate;
+
         private void Awake()
         {
             if (initialized) return;
@@ -48,6 +51,9 @@ namespace PhotonServerSettings
             PhotonConnectionProtocol = Config.Bind("Photon", "Protocol", "Udp", new ConfigDescription("Photon Protocol", new AcceptableValueList<string>(Enum.GetNames(typeof(ConnectionProtocol)))));
             PhotonAlternativeUdpPorts = Config.Bind("Photon", "Alternative Udp Ports", true, new ConfigDescription("Photon Alternative Ports (Udp)"));
             
+            PhotonObjectsInOneUpdate = Config.Bind("Photon Networking", "Objects In One Update", 0, new ConfigDescription("Do not change this unless you know what you are doing. 0 = Vanilla", new AcceptableValueRange<int>(0, 100)));
+            PhotonSendRate = Config.Bind("Photon Networking", "Send Rate", 0, new ConfigDescription("Do not change this unless you know what you are doing. 0 = Vanilla", new AcceptableValueRange<int>(0, 100)));
+            
             harmony.PatchAll(typeof(GeneralPatches));
             
             StaticLogger.LogInfo("Patches Loaded");
@@ -65,6 +71,17 @@ namespace PhotonServerSettings
     [HarmonyPatch]
     internal static class GeneralPatches
     {
+        [HarmonyPatch(typeof(NetworkManager), nameof(NetworkManager.Start))]
+        [HarmonyPostfix]
+        [HarmonyWrapSafe]
+        public static void NetworkManager_Start(){
+            if(PluginLoader.PhotonSendRate.Value > 0){
+                PhotonNetwork.SendRate = PluginLoader.PhotonSendRate.Value;
+                PhotonNetwork.SerializationRate = PluginLoader.PhotonSendRate.Value;
+                PluginLoader.StaticLogger.LogInfo($"Photon: Changed SendRate and SerializationRate");
+            }
+        }
+
         [HarmonyPatch(typeof(DataDirector), nameof(DataDirector.PhotonSetAppId))]
         [HarmonyPostfix]
         [HarmonyWrapSafe]
@@ -72,6 +89,11 @@ namespace PhotonServerSettings
             PhotonNetwork.PhotonServerSettings.AppSettings.Port = 0;
             PhotonNetwork.PhotonServerSettings.AppSettings.UseNameServer = true;
             PhotonNetwork.NetworkingClient.SerializationProtocol = SerializationProtocol.GpBinaryV18;
+            
+            if(PluginLoader.PhotonObjectsInOneUpdate.Value > 0){
+                PhotonNetwork.ObjectsInOneUpdate = PluginLoader.PhotonObjectsInOneUpdate.Value;
+                PluginLoader.StaticLogger.LogInfo($"Photon: Changed ObjectsInOneUpdate");
+            }
             
             if(!string.IsNullOrEmpty(PluginLoader.PhotonServerAddress.Value)){
                 PhotonNetwork.PhotonServerSettings.AppSettings.Server = PluginLoader.PhotonServerAddress.Value;

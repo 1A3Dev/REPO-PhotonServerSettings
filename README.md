@@ -12,6 +12,8 @@ This mod allows you to override a few values to allow using a custom photon serv
 - Photon App IDs & Udp Ports
 - Photon Connection Protocol
 - Photon Server Address, Port & Version
+- Photon Objects In One Update & Send Rate
+  - Do not change these unless you are using your own app ids or server. Semiwork have set these to be optimal based on their own testing.
 
 ### Support
 
