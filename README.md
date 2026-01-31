@@ -9,10 +9,9 @@
 
 This mod allows you to override a few values to allow using a custom photon server:
 
-- Photon Realtime App ID
-- Photon Voice App ID
-- Photon Server Address
-- Photon Server Port
+- Photon App IDs & Udp Ports
+- Photon Connection Protocol
+- Photon Server Address, Port & Version
 
 ### Support
 

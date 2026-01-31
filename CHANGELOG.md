@@ -1,3 +1,9 @@
+# 1.0.2
+
+### CHANGES
+
+- Added a config option to disable alternative Udp ports and fixed alternative ports not being disabled when using a different connection protocol.
+
 # 1.0.1
 
 ### NEW
