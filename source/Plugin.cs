@@ -33,6 +33,9 @@ namespace PhotonServerSettings
         internal static ConfigEntry<int> PhotonObjectsInOneUpdate; 
         internal static ConfigEntry<int> PhotonSendRate;
 
+        internal static int DefaultPhotonObjectsInOneUpdate = 10;
+        internal static int DefaultPhotonSendRate = 25;
+
         private void Awake()
         {
             if (initialized) return;
@@ -52,7 +55,29 @@ namespace PhotonServerSettings
             PhotonAlternativeUdpPorts = Config.Bind("Photon", "Alternative Udp Ports", true, new ConfigDescription("Photon Alternative Ports (Udp)"));
             
             PhotonObjectsInOneUpdate = Config.Bind("Photon Networking", "Objects In One Update", 0, new ConfigDescription("Do not change this unless you know what you are doing. 0 = Vanilla", new AcceptableValueRange<int>(0, 100)));
+            PhotonObjectsInOneUpdate.SettingChanged += (sender, args) => {
+                if(PhotonObjectsInOneUpdate.Value > 0){
+                    PhotonNetwork.ObjectsInOneUpdate = PhotonObjectsInOneUpdate.Value;
+                    StaticLogger.LogInfo($"[Photon] Changed ObjectsInOneUpdate: {PhotonNetwork.ObjectsInOneUpdate}");
+                }else{
+                    PhotonNetwork.ObjectsInOneUpdate = DefaultPhotonObjectsInOneUpdate;
+                    StaticLogger.LogInfo($"[Photon] Reset ObjectsInOneUpdate: {PhotonNetwork.ObjectsInOneUpdate}");
+                }
+            };
             PhotonSendRate = Config.Bind("Photon Networking", "Send Rate", 0, new ConfigDescription("Do not change this unless you know what you are doing. 0 = Vanilla", new AcceptableValueRange<int>(0, 100)));
+            PhotonSendRate.SettingChanged += (sender, args) => {
+                if(NetworkManager.instance){
+                    if(PhotonSendRate.Value > 0){
+                        PhotonNetwork.SendRate = PhotonSendRate.Value;
+                        PhotonNetwork.SerializationRate = PhotonSendRate.Value;
+                        StaticLogger.LogInfo($"[Photon] Changed SendRate and SerializationRate: {PhotonNetwork.SendRate}");
+                    }else{
+                        PhotonNetwork.SendRate = DefaultPhotonSendRate;
+                        PhotonNetwork.SerializationRate = DefaultPhotonSendRate;
+                        StaticLogger.LogInfo($"[Photon] Reset SendRate and SerializationRate: {PhotonNetwork.SendRate}");
+                    }
+                }
+            };
             
             harmony.PatchAll(typeof(GeneralPatches));
             
@@ -75,10 +100,11 @@ namespace PhotonServerSettings
         [HarmonyPostfix]
         [HarmonyWrapSafe]
         public static void NetworkManager_Start(){
+            PluginLoader.DefaultPhotonSendRate = PhotonNetwork.SendRate;
             if(PluginLoader.PhotonSendRate.Value > 0){
                 PhotonNetwork.SendRate = PluginLoader.PhotonSendRate.Value;
                 PhotonNetwork.SerializationRate = PluginLoader.PhotonSendRate.Value;
-                PluginLoader.StaticLogger.LogInfo($"Photon: Changed SendRate and SerializationRate");
+                PluginLoader.StaticLogger.LogInfo($"[Photon] Changed SendRate and SerializationRate: {PhotonNetwork.SendRate}");
             }
         }
 
@@ -89,15 +115,16 @@ namespace PhotonServerSettings
             PhotonNetwork.PhotonServerSettings.AppSettings.Port = 0;
             PhotonNetwork.PhotonServerSettings.AppSettings.UseNameServer = true;
             PhotonNetwork.NetworkingClient.SerializationProtocol = SerializationProtocol.GpBinaryV18;
-            
+
+            PluginLoader.DefaultPhotonObjectsInOneUpdate = PhotonNetwork.ObjectsInOneUpdate;
             if(PluginLoader.PhotonObjectsInOneUpdate.Value > 0){
                 PhotonNetwork.ObjectsInOneUpdate = PluginLoader.PhotonObjectsInOneUpdate.Value;
-                PluginLoader.StaticLogger.LogInfo($"Photon: Changed ObjectsInOneUpdate");
+                PluginLoader.StaticLogger.LogInfo($"[Photon] Changed ObjectsInOneUpdate: {PhotonNetwork.ObjectsInOneUpdate}");
             }
             
             if(!string.IsNullOrEmpty(PluginLoader.PhotonServerAddress.Value)){
                 PhotonNetwork.PhotonServerSettings.AppSettings.Server = PluginLoader.PhotonServerAddress.Value;
-                PluginLoader.StaticLogger.LogInfo($"Photon: Changed Server Address");
+                PluginLoader.StaticLogger.LogInfo($"[Photon] Changed Server Address: {PhotonNetwork.PhotonServerSettings.AppSettings.Server}");
                 
                 if(PluginLoader.PhotonServerVersion.Value == 4){
                     PhotonNetwork.PhotonServerSettings.AppSettings.UseNameServer = false;
@@ -106,13 +133,13 @@ namespace PhotonServerSettings
                 
                 if(PluginLoader.PhotonServerPort.Value > 0){
                     PhotonNetwork.PhotonServerSettings.AppSettings.Port = PluginLoader.PhotonServerPort.Value;
-                    PluginLoader.StaticLogger.LogInfo($"Photon: Changed Server Port");
+                    PluginLoader.StaticLogger.LogInfo($"[Photon] Changed Server Port: {PhotonNetwork.PhotonServerSettings.AppSettings.Port}");
                 }
             }
             
             if(Enum.TryParse<ConnectionProtocol>(PluginLoader.PhotonConnectionProtocol.Value, out var protocol)){
                 PhotonNetwork.PhotonServerSettings.AppSettings.Protocol = protocol;
-                PluginLoader.StaticLogger.LogInfo($"Photon: Changed Protocol ({protocol})");
+                PluginLoader.StaticLogger.LogInfo($"[Photon] Changed Protocol: {protocol}");
             }else{
                 PhotonNetwork.PhotonServerSettings.AppSettings.Protocol = ConnectionProtocol.Udp;
             }
@@ -125,12 +152,12 @@ namespace PhotonServerSettings
             
             if(!string.IsNullOrEmpty(PluginLoader.PhotonAppIdRealtime.Value)){
                 PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime = PluginLoader.PhotonAppIdRealtime.Value;
-                PluginLoader.StaticLogger.LogInfo($"Photon: Changed AppIdRealtime");
+                PluginLoader.StaticLogger.LogInfo($"[Photon] Changed AppIdRealtime: {PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime}");
             }
             
             if(!string.IsNullOrEmpty(PluginLoader.PhotonAppIdVoice.Value)){
                 PhotonNetwork.PhotonServerSettings.AppSettings.AppIdVoice = PluginLoader.PhotonAppIdVoice.Value;
-                PluginLoader.StaticLogger.LogInfo($"Photon: Changed AppIdVoice");
+                PluginLoader.StaticLogger.LogInfo($"[Photon] Changed AppIdVoice: {PhotonNetwork.PhotonServerSettings.AppSettings.AppIdVoice}");
             }
         }
         
@@ -140,7 +167,7 @@ namespace PhotonServerSettings
         public static void DataDirector_PhotonSetRegion_Postfix(){
             if(!string.IsNullOrEmpty(PluginLoader.PhotonServerAddress.Value) && PluginLoader.PhotonServerVersion.Value == 4){
                 PhotonNetwork.PhotonServerSettings.AppSettings.FixedRegion = "";
-                PluginLoader.StaticLogger.LogInfo("Photon: Cleared Region");
+                PluginLoader.StaticLogger.LogInfo("[Photon] Changed Region: Empty");
             }
         }
 
@@ -150,7 +177,7 @@ namespace PhotonServerSettings
         public static void SteamManager_SendSteamAuthTicket_Postfix(){
             if(!string.IsNullOrEmpty(PluginLoader.PhotonServerAddress.Value) || !string.IsNullOrEmpty(PluginLoader.PhotonAppIdRealtime.Value) || !string.IsNullOrEmpty(PluginLoader.PhotonAppIdVoice.Value)){
                 PhotonNetwork.AuthValues.AuthType = CustomAuthenticationType.None;
-                PluginLoader.StaticLogger.LogInfo("Photon: Cleared Auth Type");
+                PluginLoader.StaticLogger.LogInfo("[Photon] Changed AuthType: None");
             }
         }
     }

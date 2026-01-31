@@ -1,3 +1,9 @@
+# 1.0.5-PRE
+
+### CHANGES
+
+- Made `ObjectsInOneUpdate` & `SendRate` be updated instantly.
+
 # 1.0.4
 
 ### NEW
