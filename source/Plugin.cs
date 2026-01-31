@@ -28,7 +28,7 @@ namespace PhotonServerSettings
         internal static ConfigEntry<int> PhotonServerVersion;
         
         internal static ConfigEntry<string> PhotonConnectionProtocol;
-        internal static ConfigEntry<bool> PhotonAlternativePorts;
+        internal static ConfigEntry<bool> PhotonAlternativeUdpPorts;
 
         private void Awake()
         {
@@ -46,7 +46,7 @@ namespace PhotonServerSettings
             PhotonServerVersion = Config.Bind("Photon", "Server Version", 5, new ConfigDescription("Photon Server Version", new AcceptableValueRange<int>(4, 5)));
             
             PhotonConnectionProtocol = Config.Bind("Photon", "Protocol", "Udp", new ConfigDescription("Photon Protocol", new AcceptableValueList<string>(Enum.GetNames(typeof(ConnectionProtocol)))));
-            PhotonAlternativePorts = Config.Bind("Photon", "Alternative Ports", true, new ConfigDescription("Photon Alternative Ports (Udp)"));
+            PhotonAlternativeUdpPorts = Config.Bind("Photon", "Alternative Udp Ports", true, new ConfigDescription("Photon Alternative Ports (Udp)"));
             
             harmony.PatchAll(typeof(GeneralPatches));
             
@@ -95,7 +95,7 @@ namespace PhotonServerSettings
                 PhotonNetwork.PhotonServerSettings.AppSettings.Protocol = ConnectionProtocol.Udp;
             }
 
-            if(PluginLoader.PhotonAlternativePorts.Value && PhotonNetwork.PhotonServerSettings.AppSettings.Protocol == ConnectionProtocol.Udp){
+            if(PluginLoader.PhotonAlternativeUdpPorts.Value && PhotonNetwork.PhotonServerSettings.AppSettings.Protocol == ConnectionProtocol.Udp){
                 PhotonNetwork.ServerPortOverrides = PhotonPortDefinition.AlternativeUdpPorts;
             }else{
                 PhotonNetwork.ServerPortOverrides = new PhotonPortDefinition();
