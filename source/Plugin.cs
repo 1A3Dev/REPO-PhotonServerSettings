@@ -22,10 +22,13 @@ namespace PhotonServerSettings
         
         internal static ConfigEntry<string> PhotonAppIdRealtime;
         internal static ConfigEntry<string> PhotonAppIdVoice;
+        
         internal static ConfigEntry<string> PhotonServerAddress;
         internal static ConfigEntry<int> PhotonServerPort;
         internal static ConfigEntry<int> PhotonServerVersion;
+        
         internal static ConfigEntry<string> PhotonConnectionProtocol;
+        internal static ConfigEntry<bool> PhotonAlternativePorts;
 
         private void Awake()
         {
@@ -37,11 +40,14 @@ namespace PhotonServerSettings
             
             PhotonAppIdRealtime = Config.Bind("Photon", "AppId Realtime", "", new ConfigDescription("Photon Realtime App ID"));
             PhotonAppIdVoice = Config.Bind("Photon", "AppId Voice", "", new ConfigDescription("Photon Voice App ID"));
+            
             PhotonServerAddress = Config.Bind("Photon", "Server", "", new ConfigDescription("Photon Server Address"));
             PhotonServerPort = Config.Bind("Photon", "Server Port", 0, new ConfigDescription("Photon Server Port", new AcceptableValueRange<int>(0, 65535)));
             PhotonServerVersion = Config.Bind("Photon", "Server Version", 5, new ConfigDescription("Photon Server Version", new AcceptableValueRange<int>(4, 5)));
+            
             PhotonConnectionProtocol = Config.Bind("Photon", "Protocol", "Udp", new ConfigDescription("Photon Protocol", new AcceptableValueList<string>(Enum.GetNames(typeof(ConnectionProtocol)))));
-
+            PhotonAlternativePorts = Config.Bind("Photon", "Alternative Ports", true, new ConfigDescription("Photon Alternative Ports (Udp)"));
+            
             harmony.PatchAll(typeof(GeneralPatches));
             
             StaticLogger.LogInfo("Patches Loaded");
@@ -87,6 +93,12 @@ namespace PhotonServerSettings
                 PluginLoader.StaticLogger.LogInfo($"Photon: Changed Protocol ({protocol})");
             }else{
                 PhotonNetwork.PhotonServerSettings.AppSettings.Protocol = ConnectionProtocol.Udp;
+            }
+
+            if(PluginLoader.PhotonAlternativePorts.Value && PhotonNetwork.PhotonServerSettings.AppSettings.Protocol == ConnectionProtocol.Udp){
+                PhotonNetwork.ServerPortOverrides = PhotonPortDefinition.AlternativeUdpPorts;
+            }else{
+                PhotonNetwork.ServerPortOverrides = new PhotonPortDefinition();
             }
             
             if(!string.IsNullOrEmpty(PluginLoader.PhotonAppIdRealtime.Value)){

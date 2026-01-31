@@ -30,7 +30,7 @@
             Destination="BepInEx/plugins/$(ProjectName)/bundles" />
         <ThunderstoreBuildCopyPath Include="$(ProjectDir)../LICENSE" Destination="/" />
         <ThunderstoreBuildCopyPath Include="$(ProjectDir)../CHANGELOG.md" Destination="/" />
-        <ThunderstorePublishCommunity Include="repo" CategorySlugs="mods;misc;serverside;clientside" />
+        <ThunderstorePublishCommunity Include="repo" CategorySlugs="mods;misc;clientside" />
         <ThunderstoreDependency Include="BepInEx-BepInExPack" Version="5.4.2100" />
     </ItemGroup>
 
