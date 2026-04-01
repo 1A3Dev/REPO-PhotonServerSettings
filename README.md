@@ -23,9 +23,15 @@ You can get support in any the following places:
 - [GitHub Issues](https://github.com/1A3Dev/REPO-PhotonServerSettings/issues)
 - [My Discord Server](https://discord.gg/CKqVFPRtKp)
 
+### Latest Versions
+
+| Mod Version | Game Version |
+| ----------- | ------------ |
+| v1.0.4      | v0.3.x       |
+
 ### Compatibility
 
-- Supported Game Versions:
-  - v0.3.x
+- Works Well With:
+  - N/A
 - Not Compatible With:
   - N/A

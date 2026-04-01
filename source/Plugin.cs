@@ -20,9 +20,11 @@ namespace PhotonServerSettings
         internal static ManualLogSource StaticLogger { get; private set; }
         internal static ConfigFile StaticConfig { get; private set; }
         
+        internal static ConfigEntry<bool> PhotonAppIdEnabled;
         internal static ConfigEntry<string> PhotonAppIdRealtime;
         internal static ConfigEntry<string> PhotonAppIdVoice;
         
+        internal static ConfigEntry<bool> PhotonServerEnabled;
         internal static ConfigEntry<string> PhotonServerAddress;
         internal static ConfigEntry<int> PhotonServerPort;
         internal static ConfigEntry<int> PhotonServerVersion;
@@ -44,9 +46,11 @@ namespace PhotonServerSettings
             StaticLogger = Logger;
             StaticConfig = Config;
             
+            PhotonAppIdEnabled = Config.Bind("Photon", "AppId Override", true, new ConfigDescription("Photon App ID Override"));
             PhotonAppIdRealtime = Config.Bind("Photon", "AppId Realtime", "", new ConfigDescription("Photon Realtime App ID"));
             PhotonAppIdVoice = Config.Bind("Photon", "AppId Voice", "", new ConfigDescription("Photon Voice App ID"));
             
+            PhotonServerEnabled = Config.Bind("Photon", "Server Override", true, new ConfigDescription("Photon Server Override"));
             PhotonServerAddress = Config.Bind("Photon", "Server", "", new ConfigDescription("Photon Server Address"));
             PhotonServerPort = Config.Bind("Photon", "Server Port", 0, new ConfigDescription("Photon Server Port", new AcceptableValueRange<int>(0, 65535)));
             PhotonServerVersion = Config.Bind("Photon", "Server Version", 5, new ConfigDescription("Photon Server Version", new AcceptableValueRange<int>(4, 5)));
@@ -115,25 +119,25 @@ namespace PhotonServerSettings
             PhotonNetwork.PhotonServerSettings.AppSettings.Port = 0;
             PhotonNetwork.PhotonServerSettings.AppSettings.UseNameServer = true;
             PhotonNetwork.NetworkingClient.SerializationProtocol = SerializationProtocol.GpBinaryV18;
-
+            
             PluginLoader.DefaultPhotonObjectsInOneUpdate = PhotonNetwork.ObjectsInOneUpdate;
             if(PluginLoader.PhotonObjectsInOneUpdate.Value > 0){
                 PhotonNetwork.ObjectsInOneUpdate = PluginLoader.PhotonObjectsInOneUpdate.Value;
                 PluginLoader.StaticLogger.LogInfo($"[Photon] Changed ObjectsInOneUpdate: {PhotonNetwork.ObjectsInOneUpdate}");
             }
             
-            if(!string.IsNullOrEmpty(PluginLoader.PhotonServerAddress.Value)){
+            if(PluginLoader.PhotonServerEnabled.Value && !string.IsNullOrEmpty(PluginLoader.PhotonServerAddress.Value)){
                 PhotonNetwork.PhotonServerSettings.AppSettings.Server = PluginLoader.PhotonServerAddress.Value;
                 PluginLoader.StaticLogger.LogInfo($"[Photon] Changed Server Address: {PhotonNetwork.PhotonServerSettings.AppSettings.Server}");
-                
-                if(PluginLoader.PhotonServerVersion.Value == 4){
-                    PhotonNetwork.PhotonServerSettings.AppSettings.UseNameServer = false;
-                    PhotonNetwork.NetworkingClient.SerializationProtocol = SerializationProtocol.GpBinaryV16;
-                }
                 
                 if(PluginLoader.PhotonServerPort.Value > 0){
                     PhotonNetwork.PhotonServerSettings.AppSettings.Port = PluginLoader.PhotonServerPort.Value;
                     PluginLoader.StaticLogger.LogInfo($"[Photon] Changed Server Port: {PhotonNetwork.PhotonServerSettings.AppSettings.Port}");
+                }
+                
+                if(PluginLoader.PhotonServerVersion.Value == 4){
+                    PhotonNetwork.PhotonServerSettings.AppSettings.UseNameServer = false;
+                    PhotonNetwork.NetworkingClient.SerializationProtocol = SerializationProtocol.GpBinaryV16;
                 }
             }
             
@@ -143,21 +147,23 @@ namespace PhotonServerSettings
             }else{
                 PhotonNetwork.PhotonServerSettings.AppSettings.Protocol = ConnectionProtocol.Udp;
             }
-
+            
             if(PluginLoader.PhotonAlternativeUdpPorts.Value && PhotonNetwork.PhotonServerSettings.AppSettings.Protocol == ConnectionProtocol.Udp){
                 PhotonNetwork.ServerPortOverrides = PhotonPortDefinition.AlternativeUdpPorts;
             }else{
                 PhotonNetwork.ServerPortOverrides = new PhotonPortDefinition();
             }
             
-            if(!string.IsNullOrEmpty(PluginLoader.PhotonAppIdRealtime.Value)){
-                PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime = PluginLoader.PhotonAppIdRealtime.Value;
-                PluginLoader.StaticLogger.LogInfo($"[Photon] Changed AppIdRealtime: {PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime}");
-            }
-            
-            if(!string.IsNullOrEmpty(PluginLoader.PhotonAppIdVoice.Value)){
-                PhotonNetwork.PhotonServerSettings.AppSettings.AppIdVoice = PluginLoader.PhotonAppIdVoice.Value;
-                PluginLoader.StaticLogger.LogInfo($"[Photon] Changed AppIdVoice: {PhotonNetwork.PhotonServerSettings.AppSettings.AppIdVoice}");
+            if(PluginLoader.PhotonAppIdEnabled.Value){
+                if(!string.IsNullOrEmpty(PluginLoader.PhotonAppIdRealtime.Value)){
+                    PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime = PluginLoader.PhotonAppIdRealtime.Value;
+                    PluginLoader.StaticLogger.LogInfo($"[Photon] Changed AppIdRealtime: {PhotonNetwork.PhotonServerSettings.AppSettings.AppIdRealtime}");
+                }
+                
+                if(!string.IsNullOrEmpty(PluginLoader.PhotonAppIdVoice.Value)){
+                    PhotonNetwork.PhotonServerSettings.AppSettings.AppIdVoice = PluginLoader.PhotonAppIdVoice.Value;
+                    PluginLoader.StaticLogger.LogInfo($"[Photon] Changed AppIdVoice: {PhotonNetwork.PhotonServerSettings.AppSettings.AppIdVoice}");
+                }
             }
         }
         
