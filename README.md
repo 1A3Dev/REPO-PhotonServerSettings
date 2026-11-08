@@ -25,9 +25,10 @@ You can get support in any the following places:
 
 ### Latest Versions
 
-| Mod Version | Game Version |
-| ----------- | ------------ |
-| v1.0.4      | v0.3.x       |
+| Mod Version | Game Version    |
+| ----------- | --------------- |
+| v1.0.5      | v0.5.x          |
+| v1.0.4      | v0.3.x - v0.4.x |
 
 ### Compatibility
 
