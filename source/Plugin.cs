@@ -6,7 +6,7 @@ using ExitGames.Client.Photon;
 using HarmonyLib;
 using Photon.Pun;
 using Photon.Realtime;
-using Steamworks;
+using Platforms;
 
 namespace PhotonServerSettings
 {
@@ -177,10 +177,10 @@ namespace PhotonServerSettings
             }
         }
 
-        [HarmonyPatch(typeof(SteamManager), nameof(SteamManager.SendSteamAuthTicket))]
+        [HarmonyPatch(typeof(PlatformManager), nameof(PlatformManager.SetPhotonAuthTicket))]
         [HarmonyPostfix]
         [HarmonyWrapSafe]
-        public static void SteamManager_SendSteamAuthTicket_Postfix(){
+        public static void PlatformManager_SetPhotonAuthTicket_Postfix(){
             if(!string.IsNullOrEmpty(PluginLoader.PhotonServerAddress.Value) || !string.IsNullOrEmpty(PluginLoader.PhotonAppIdRealtime.Value) || !string.IsNullOrEmpty(PluginLoader.PhotonAppIdVoice.Value)){
                 PhotonNetwork.AuthValues.AuthType = CustomAuthenticationType.None;
                 PluginLoader.StaticLogger.LogInfo("[Photon] Changed AuthType: None");
